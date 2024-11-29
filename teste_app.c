@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../src/main.c" 
+#include "main.c" 
 
 #define MAX_COMISSARIOS 3
 
