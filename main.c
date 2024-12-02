@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define MAX_COMISSARIOS 3
 
@@ -22,7 +23,7 @@ typedef struct {
 
 typedef struct {
     int codigo;
-    char data[10];
+    char data[11];
     char hora[6];
     char origem[50];
     char destino[50];
@@ -136,13 +137,57 @@ void listarTripulacao() {
 
 void cadastrarVoo() {
     FILE *file = fopen("voos.bin", "ab+");
+    if (!file) {
+        printf("Erro ao abrir o arquivo de voos.\n");
+        return;
+    }
+
     Voo v;
     printf("Digite o código do voo: ");
     scanf("%d", &v.codigo);
-    printf("Digite a data (DD/MM/AAAA): ");
-    scanf(" %[^\n]", v.data);
-    printf("Digite a hora (HH:MM): ");
+
+    // Obtendo a data e hora atuais
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+
+    // Formatando a data e hora
+    snprintf(v.data, sizeof(v.data), "%02d/%02d/%04d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
+    snprintf(v.hora, sizeof(v.hora), "%02d:%02d", tm.tm_hour, tm.tm_min);
+
+    printf("Data mínima do voo: %s\n", v.data);
+    printf("Hora mínima do voo: %s\n", v.hora);
+
+    // Verificando se a data é vál ida
+    char data_input[11];
+    printf("Digite a data do voo (dd/mm/aaaa): ");
+    scanf(" %[^\n]", data_input);
+
+    struct tm data_v;
+    if (strptime(data_input, "%d/%m/%Y", &data_v) == NULL) {
+        printf("Data inválida! Formato deve ser dd/mm/aaaa.\n");
+        fclose(file);
+        return;
+    }
+
+    // Verificando se a data é no futuro
+    time_t data_v_time = mktime(&data_v);
+    if (difftime(data_v_time, t) < 0) {
+        printf("Data não pode ser no passado!\n");
+        fclose(file);
+        return;
+    }
+
+    strcpy(v.data, data_input);
+    printf("Digite a hora do voo (hh:mm): ");
     scanf(" %[^\n]", v.hora);
+
+    // Verificando se a hora está no formato correto
+    if (sscanf(v.hora, "%2d:%2d", &tm.tm_hour, &tm.tm_min) != 2 || tm.tm_hour > 23 || tm.tm_min > 59) {
+        printf("Hora inválida! Formato deve ser hh:mm.\n");
+        fclose(file);
+        return;
+    }
+
     printf("Digite a origem: ");
     scanf(" %[^\n]", v.origem);
     printf("Digite o destino: ");
@@ -165,6 +210,7 @@ void cadastrarVoo() {
     fwrite(&v, sizeof(Voo), 1, file);
     fclose(file);
     printf("Voo cadastrado com sucesso!\n");
+
 }
 
 void listarVoos() {
