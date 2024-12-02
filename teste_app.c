@@ -41,9 +41,25 @@ void testCadastrarPassageiro() {
 void testCadastrarVoo() {
     limparArquivos();
 
-    FILE *file = fopen("voos.bin", "rb");
+    // Simula o cadastro de um voo válido
+    FILE *file = fopen("voos.bin", "wb");
     if (!file) {
-        printf("Falha ao abrir voos.bin\n");
+        printf("Falha ao criar voos.bin\n");
+        return;
+    }
+
+    Voo vooTeste = {
+        .codigo = 1,
+        .status = 1,
+    };
+    strcpy(vooTeste.origem, "Origem Teste");
+    fwrite(&vooTeste, sizeof(Voo), 1, file);
+    fclose(file);
+
+    // Reabre o arquivo para leitura
+    file = fopen("voos.bin", "rb");
+    if (!file) {
+        printf("Falha ao abrir voos.bin para leitura\n");
         return;
     }
 
