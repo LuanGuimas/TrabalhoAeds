@@ -88,3 +88,91 @@ void testListarPassageiros() {
         printf("Teste listarPassageiros falhou!\n");
     }
 }
+void testListarVoos() {
+    limparArquivos();
+
+    cadastrarVoo();
+
+    freopen("output.tmp", "w", stdout); // Redireciona saída para arquivo
+    listarVoos();
+    freopen("/dev/tty", "w", stdout);  // Restaura saída padrão
+
+    FILE *out = fopen("output.tmp", "r");
+    char buffer[256];
+    int found = 0;
+
+    while (fgets(buffer, sizeof(buffer), out)) {
+        if (strstr(buffer, "Origem Teste") != NULL) {
+            found = 1;
+            break;
+        }
+    }
+
+    fclose(out);
+    remove("output.tmp");
+
+    if (found) {
+        printf("Teste listarVoos passou!\n");
+    } else {
+        printf("Teste listarVoos falhou!\n");
+    }
+}
+void testComissariosNoVoo() {
+    limparArquivos();
+
+    cadastrarTripulacao(); // Cadastre tripulantes para serem usados no voo
+    cadastrarVoo();
+
+    FILE *file = fopen("voos.bin", "rb");
+    if (!file) {
+        printf("Falha ao abrir voos.bin\n");
+        return;
+    }
+
+    Voo v;
+    if (fread(&v, sizeof(Voo), 1, file) == 1) {
+        int valid = 1;
+        for (int i = 0; i < MAX_COMISSARIOS; i++) {
+            if (v.comissarios[i] < 0) {
+                valid = 0;
+                break;
+            }
+        }
+
+        if (valid) {
+            printf("Teste comissariosNoVoo passou!\n");
+        } else {
+            printf("Teste comissariosNoVoo falhou!\n");
+        }
+    } else {
+        printf("Nenhum voo encontrado. Teste falhou!\n");
+    }
+
+    fclose(file);
+}
+void testReservarAssento() {
+    limparArquivos();
+
+    // Simular cadastro de voo e passageiros antes de reservar
+    cadastrarVoo();
+    cadastrarPassageiro();
+
+    FILE *file = fopen("reservas.bin", "rb");
+    if (!file) {
+        printf("Falha ao abrir reservas.bin\n");
+        return;
+    }
+
+    Reserva r;
+    if (fread(&r, sizeof(Reserva), 1, file) == 1) {
+        if (r.codigoVoo == 1 && r.numeroAssento == 1 && r.codigoPassageiro == 1) {
+            printf("Teste reservarAssento passou!\n");
+        } else {
+            printf("Teste reservarAssento falhou!\n");
+        }
+    } else {
+        printf("Nenhuma reserva encontrada. Teste falhou!\n");
+    }
+
+    fclose(file);
+}
