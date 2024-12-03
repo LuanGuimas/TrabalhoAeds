@@ -32,14 +32,14 @@ typedef struct {
     int piloto;
     int copiloto;
     int comissarios[MAX_COMISSARIOS];
-    int status; // 1 ativo, 0 inativo
+    int status;
     float tarifa;
 } Voo;
 
 typedef struct {
     int numero;
     int codigoVoo;
-    int status; // 1 ocupado, 0 livre
+    int status;
 } Assento;
 
 typedef struct {
@@ -48,39 +48,47 @@ typedef struct {
     int codigoPassageiro;
 } Reserva;
 
-// Função para validar data e hora
-int validarDataHora(const char *data, const char *hora) {
-    int dia, mes, ano, horas, minutos;
-    time_t t = time(NULL);
-    struct tm *tempoAtual = localtime(&t);
+void limparBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
 
-    int diaAtual = tempoAtual->tm_mday;
-    int mesAtual = tempoAtual->tm_mon + 1;
-    int anoAtual = tempoAtual->tm_year + 1900;
-    int horaAtual = tempoAtual->tm_hour;
-    int minutoAtual = tempoAtual->tm_min;
+int lerOpcao() {
+    int opcao;
+    char entrada[10];
 
-    if (sscanf(data, "%d/%d/%d", &dia, &mes, &ano) != 3 ||
-        sscanf(hora, "%d:%d", &horas, &minutos) != 2) {
-        printf("Formato de data ou hora inválido!\n");
-        return 0;
-    }
-
-    if (ano < anoAtual || 
-        (ano == anoAtual && mes < mesAtual) || 
-        (ano == anoAtual && mes == mesAtual && dia < diaAtual)) {
-        printf("Data anterior à atual!\n");
-        return 0;
-    }
-
-    if (ano == anoAtual && mes == mesAtual && dia == diaAtual) {
-        if (horas < horaAtual || (horas == horaAtual && minutos < minutoAtual)) {
-            printf("Hora anterior à atual!\n");
-            return 0;
+    while (1) {
+        printf("Escolha uma opção: ");
+        if (fgets(entrada, sizeof(entrada), stdin) != NULL) {
+            if (sscanf(entrada, "%d", &opcao) == 1) {
+                return opcao;
+            } else {
+                printf("Entrada inválida! Digite um número.\n");
+            }
+        } else {
+            printf("Erro ao ler entrada!\n");
         }
     }
+}
 
-    return 1;
+int validarTelefone(const char *telefone) {
+    // Verifica se o telefone começa com 0 e tem 14 caracteres (incluindo o código de área)
+    if (telefone[0] == '0' && strlen(telefone) == 14) {
+        // Verifica se os primeiros 3 caracteres são o código de área e o resto são dígitos
+        for (int i = 0; i < 14; i++) {
+            if (i == 0 || i == 1 || i == 2) {
+                if (!isdigit(telefone[i])) {
+                    return 0; // Não é um dígito
+                }
+            } else {
+                if (!isdigit(telefone[i]) && telefone[i] != '-') {
+                    return 0; // Não é um dígito ou um hífen
+                }
+            }
+        }
+        return 1; // Telefone válido
+    }
+    return 0; // Telefone inválido
 }
 
 void cadastrarPassageiro() {
@@ -100,8 +108,16 @@ void cadastrarPassageiro() {
     scanf(" %[^\n]", p.nome);
     printf("Digite o endereço: ");
     scanf(" %[^\n]", p.endereco);
-    printf("Digite o telefone: ");
-    scanf(" %[^\n]", p.telefone);
+
+    // Validação do telefone
+    do {
+        printf("Digite o telefone (formato: 0XX-XXXXX-XXXX): ");
+        scanf(" %[^\n]", p.telefone);
+        if (!validarTelefone(p.telefone)) {
+            printf("Telefone inválido! Tente novamente.\n");
+        }
+    } while (!validarTelefone(p.telefone));
+
     printf("Fidelidade (1 para sim, 0 para não): ");
     scanf("%d", &p.fidelidade);
     p.pontos = 0;
@@ -109,7 +125,6 @@ void cadastrarPassageiro() {
     fclose(file);
     printf("Passageiro cadastrado com sucesso!\n");
 }
-
 void listarPassageiros() {
     FILE *file = fopen("passageiros.bin", "rb");
     if (!file) {
@@ -179,6 +194,40 @@ void listarTripulacao() {
     fclose(file);
 }
 
+int validarDataHora(const char *data, const char *hora) {
+    int dia, mes, ano, horas, minutos;
+    time_t t = time(NULL);
+    struct tm *tempoAtual = localtime(&t);
+
+    int diaAtual = tempoAtual->tm_mday;
+    int mesAtual = tempoAtual->tm_mon + 1;
+    int anoAtual = tempoAtual->tm_year + 1900;
+    int horaAtual = tempoAtual->tm_hour;
+    int minutoAtual = tempoAtual->tm_min;
+
+    if (sscanf(data, "%d/%d/%d", &dia, &mes, &ano) != 3 ||
+        sscanf(hora, "%d:%d", &horas, &minutos) != 2) {
+        printf("Formato de data ou hora inválido!\n");
+        return 0;
+    }
+
+    if (ano < anoAtual || 
+        (ano == anoAtual && mes < mesAtual) || 
+        (ano == anoAtual && mes == mesAtual && dia < diaAtual)) {
+        printf("Data anterior à atual!\n");
+        return 0;
+    }
+
+    if (ano == anoAtual && mes == mesAtual && dia == diaAtual) {
+        if (horas < horaAtual || (horas == horaAtual && minutos < minutoAtual)) {
+            printf("Hora anterior à atual!\n");
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
 void cadastrarVoo() {
     FILE *file = fopen("voos.bin", "ab+");
     if (!file) {
@@ -234,27 +283,6 @@ void listarVoos() {
     fclose(file);
 }
 
-void cadastrarAssentos(int codigoVoo) {
-    FILE *file = fopen("assentos.bin", "ab+");
-    if (!file) {
-        printf("Erro ao abrir o arquivo de assentos.\n");
-        return;
-    }
-    int numAssentos;
-    printf("Digite o número de assentos para o voo %d: ", codigoVoo);
-    scanf("%d", &numAssentos);
-
-    for (int i = 1; i <= numAssentos; i++) {
-        Assento a;
-        a.numero = i;
-        a.codigoVoo = codigoVoo;
-        a.status = 0;
-        fwrite(&a, sizeof(Assento), 1, file);
-    }
-    fclose(file);
-    printf("Assentos cadastrados com sucesso!\n");
-}
-
 int main() {
     int opcao;
     do {
@@ -266,8 +294,9 @@ int main() {
         printf("5. Cadastrar Voo\n");
         printf("6. Listar Voos\n");
         printf("0. Sair\n");
-        printf("Escolha uma opção: ");
-        scanf("%d", &opcao);
+
+        opcao = lerOpcao();
+
         switch (opcao) {
             case 1:
                 cadastrarPassageiro();
