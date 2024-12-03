@@ -40,6 +40,7 @@ typedef struct {
     int numero;
     int codigoVoo;
     int status;
+    
 } Assento;
 
 typedef struct {
@@ -148,23 +149,45 @@ void cadastrarTripulacao() {
     }
 
     Tripulacao t;
-    printf("Digite o código da tripulação: ");
-    scanf("%d", &t.codigo);
+    int codigoUnico = 1;
 
-    Tripulacao temp;
-    while (fread(&temp, sizeof(Tripulacao), 1, file)) {
-        if (temp.codigo == t.codigo) {
-            printf("Código de tripulante já existente! Cadastro não realizado.\n");
+    // Garantir código único para o tripulante
+    do {
+        FILE *verificaFile = fopen("tripulacao.bin", "rb");
+        if (!verificaFile) {
+            printf("Erro ao abrir o arquivo de verificação.\n");
             fclose(file);
             return;
         }
-    }
 
+        printf("Digite o código da tripulação: ");
+        scanf("%d", &t.codigo);
+
+        Tripulacao temp;
+        while (fread(&temp, sizeof(Tripulacao), 1, verificaFile)) {
+            if (temp.codigo == t.codigo) {
+                printf("Código de tripulante já existente! Por favor, insira outro código.\n");
+                codigoUnico = 0;
+                break;
+            }
+        }
+        fclose(verificaFile);
+    } while (!codigoUnico);
+
+    // Informações do tripulante
     printf("Digite o nome: ");
     scanf(" %[^\n]", t.nome);
-    printf("Digite o telefone: ");
-    scanf(" %[^\n]", t.telefone);
 
+    // Validação do telefone
+    do {
+        printf("Digite o telefone (formato: 0XX-XXXXXXXX): ");
+        scanf(" %[^\n]", t.telefone);
+        if (!validarTelefone(t.telefone)) {
+            printf("Telefone inválido! Certifique-se de seguir o formato 0XX-XXXXXXXX.\n");
+        }
+    } while (!validarTelefone(t.telefone));
+
+    // Validação do cargo
     do {
         printf("Digite o cargo (Piloto, Copiloto, Comissario): ");
         scanf(" %[^\n]", t.cargo);
@@ -179,6 +202,7 @@ void cadastrarTripulacao() {
     fclose(file);
     printf("Tripulante cadastrado com sucesso!\n");
 }
+
 
 void listarTripulacao() {
     FILE *file = fopen("tripulacao.bin", "rb");
@@ -228,6 +252,28 @@ int validarDataHora(const char *data, const char *hora) {
     return 1;
 }
 
+int validarTarifa(float tarifa) {
+    return tarifa >= 0; // Tarifa não pode ser negativa
+}
+
+int verificarCargoTripulacao(int codigo, const char *cargoEsperado) {
+    FILE *file = fopen("tripulacao.bin", "rb");
+    if (!file) {
+        printf("Erro ao abrir o arquivo de tripulação.\n");
+        return 0;
+    }
+
+    Tripulacao t;
+    while (fread(&t, sizeof(Tripulacao), 1, file)) {
+        if (t.codigo == codigo && strcmp(t.cargo, cargoEsperado) == 0) {
+            fclose(file);
+            return 1; // Código encontrado com o cargo correto
+        }
+    }
+
+    fclose(file);
+    return 0; // Código não encontrado ou cargo incorreto
+}
 void cadastrarVoo() {
     FILE *file = fopen("voos.bin", "ab+");
     if (!file) {
@@ -236,9 +282,32 @@ void cadastrarVoo() {
     }
 
     Voo v;
-    printf("Digite o código do voo: ");
-    scanf("%d", &v.codigo);
+    int codigoUnico;
 
+    do {
+        FILE *verificaFile = fopen("voos.bin", "rb");
+        if (!verificaFile) {
+            printf("Erro ao abrir o arquivo de verificação.\n");
+            fclose(file);
+            return;
+        }
+
+        printf("Digite o código do voo: ");
+        scanf("%d", &v.codigo);
+
+        codigoUnico = 1;
+        Voo temp;
+        while (fread(&temp, sizeof(Voo), 1, verificaFile)) {
+            if (temp.codigo == v.codigo) {
+                printf("Código já existente! Por favor, insira outro código.\n");
+                codigoUnico = 0;
+                break;
+            }
+        }
+        fclose(verificaFile);
+    } while (!codigoUnico);
+
+    // Validação de data e hora
     do {
         printf("Digite a data do voo (dd/mm/aaaa): ");
         scanf(" %[^\n]", v.data);
@@ -252,34 +321,108 @@ void cadastrarVoo() {
     scanf(" %[^\n]", v.destino);
     printf("Digite o avião: ");
     scanf(" %[^\n]", v.aviao);
+
+    // Verificar o código do piloto (não é necessário ser único)
     printf("Digite o código do piloto: ");
     scanf("%d", &v.piloto);
+    if (!verificarCargoTripulacao(v.piloto, "Piloto")) {
+        printf("Código inválido ou não pertence a um Piloto! O voo será registrado como INATIVO.\n");
+        v.piloto = -1; // Marcando como inválido
+    }
+
+    // Verificar o código do copiloto
     printf("Digite o código do copiloto: ");
     scanf("%d", &v.copiloto);
-    printf("Digite a tarifa: ");
-    scanf("%f", &v.tarifa);
-    for (int i = 0; i < MAX_COMISSARIOS; i++) {
-        printf("Digite o código do comissario %d (0 para nenhum): ", i + 1);
-        scanf("%d", &v.comissarios[i]);
+    if (!verificarCargoTripulacao(v.copiloto, "Copiloto")) {
+        printf("Código inválido ou não pertence a um Copiloto! O voo será registrado como INATIVO.\n");
+        v.copiloto = -1; // Marcando como inválido
     }
-    v.status = (v.piloto > 0 && v.copiloto > 0) ? 1 : 0;
+
+    // Verificar e adicionar comissários
+    for (int i = 0; i < MAX_COMISSARIOS; i++) {
+        printf("Digite o código do comissário %d (0 para nenhum): ", i + 1);
+        scanf("%d", &v.comissarios[i]);
+        if (v.comissarios[i] != 0 && !verificarCargoTripulacao(v.comissarios[i], "Comissario")) {
+            printf("Código de comissário inválido! Ignorado.\n");
+            v.comissarios[i] = 0; // Zerar código inválido
+        }
+    }
+
+    // Validação da tarifa
+    do {
+        printf("Digite a tarifa (formato: 0.00): ");
+        scanf("%f", &v.tarifa);
+        if (v.tarifa < 0) {
+            printf("Tarifa inválida! Deve ser um valor positivo.\n");
+        }
+    } while (v.tarifa < 0);
+
+    // Determinar status do voo
+    // Se piloto ou copiloto for inválido, o status será "Inativo"
+    if (v.piloto != -1 && v.copiloto != -1) {
+        v.status = 1; // Ativo se ambos forem válidos
+    } else {
+        v.status = 0; // Inativo se algum for inválido
+    }
+
     fwrite(&v, sizeof(Voo), 1, file);
     fclose(file);
-    printf("Voo cadastrado com sucesso!\n");
+    printf("Voo cadastrado com sucesso! Status: %s\n", v.status ? "Ativo" : "Inativo");
 }
-
 void listarVoos() {
     FILE *file = fopen("voos.bin", "rb");
     if (!file) {
         printf("Nenhum voo cadastrado.\n");
         return;
     }
+
     Voo v;
     printf("\n--- Lista de Voos ---\n");
     while (fread(&v, sizeof(Voo), 1, file)) {
-        printf("Código: %d, Origem: %s, Destino: %s, Status: %s\n",
-               v.codigo, v.origem, v.destino, v.status ? "Ativo" : "Inativo");
+        int statusOriginal = v.status;
+
+        // Verificar piloto
+        if (!verificarCargoTripulacao(v.piloto, "Piloto")) {
+            printf("Aviso: Piloto com código %d não encontrado ou inválido. Voo marcado como inativo.\n", v.piloto);
+            v.status = 0;
+        }
+
+        // Verificar copiloto
+        if (!verificarCargoTripulacao(v.copiloto, "Copiloto")) {
+            printf("Aviso: Copiloto com código %d não encontrado ou inválido. Voo marcado como inativo.\n", v.copiloto);
+            v.status = 0;
+        }
+
+        // Verificar comissários
+        for (int i = 0; i < MAX_COMISSARIOS; i++) {
+            if (v.comissarios[i] != 0 && !verificarCargoTripulacao(v.comissarios[i], "Comissario")) {
+                printf("Aviso: Comissário com código %d não encontrado ou inválido. Código ignorado.\n", v.comissarios[i]);
+                v.comissarios[i] = 0; // Zerar código inválido
+            }
+        }
+
+        // Exibir voo
+        printf("Código: %d\n", v.codigo);
+        printf("Data: %s\n", v.data);
+        printf("Hora: %s\n", v.hora);
+        printf("Origem: %s\n", v.origem);
+        printf("Destino: %s\n", v.destino);
+        printf("Avião: %s\n", v.aviao);
+        printf("Piloto: %d\n", v.piloto);
+        printf("Copiloto: %d\n", v.copiloto);
+        printf("Tarifa: R$ %.2f\n", v.tarifa);
+        printf("Comissários: ");
+        for (int i = 0; i < MAX_COMISSARIOS; i++) {
+            if (v.comissarios[i] != 0) {
+                printf("%d ", v.comissarios[i]);
+            }
+        }
+        printf("\nStatus: %s\n\n", v.status ? "Ativo" : "Inativo");
+
+        // Restaurar status original após exibição (caso a validação seja temporária)
+        v.status = statusOriginal;
     }
+
     fclose(file);
 }
 
