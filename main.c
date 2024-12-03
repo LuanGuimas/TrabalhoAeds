@@ -2,9 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
 #include <locale.h>
-
 
 #define MAX_COMISSARIOS 3
 
@@ -34,14 +32,14 @@ typedef struct {
     int piloto;
     int copiloto;
     int comissarios[MAX_COMISSARIOS];
-    int status; // 1 ativo, 0 inativo
+    int status;
     float tarifa;
 } Voo;
 
 typedef struct {
     int numero;
     int codigoVoo;
-    int status; // 1 ocupado, 0 livre
+    int status;
 } Assento;
 
 typedef struct {
@@ -50,39 +48,27 @@ typedef struct {
     int codigoPassageiro;
 } Reserva;
 
+void limparBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
 
-int validarDataHora(const char *data, const char *hora) {
-    int dia, mes, ano, horas, minutos;
-    time_t t = time(NULL);
-    struct tm *tempoAtual = localtime(&t);
+int lerOpcao() {
+    int opcao;
+    char entrada[10];
 
-    int diaAtual = tempoAtual->tm_mday;
-    int mesAtual = tempoAtual->tm_mon + 1;
-    int anoAtual = tempoAtual->tm_year + 1900;
-    int horaAtual = tempoAtual->tm_hour;
-    int minutoAtual = tempoAtual->tm_min;
-
-    if (sscanf(data, "%d/%d/%d", &dia, &mes, &ano) != 3 ||
-        sscanf(hora, "%d:%d", &horas, &minutos) != 2) {
-        printf("Formato de data ou hora inválido!\n");
-        return 0;
-    }
-
-    if (ano < anoAtual || 
-        (ano == anoAtual && mes < mesAtual) || 
-        (ano == anoAtual && mes == mesAtual && dia < diaAtual)) {
-        printf("Data anterior à atual!\n");
-        return 0;
-    }
-
-    if (ano == anoAtual && mes == mesAtual && dia == diaAtual) {
-        if (horas < horaAtual || (horas == horaAtual && minutos < minutoAtual)) {
-            printf("Hora anterior à atual!\n");
-            return 0;
+    while (1) {
+        printf("Escolha uma opção: ");
+        if (fgets(entrada, sizeof(entrada), stdin) != NULL) {
+            if (sscanf(entrada, "%d", &opcao) == 1) {
+                return opcao;
+            } else {
+                printf("Entrada inválida! Digite um número.\n");
+            }
+        } else {
+            printf("Erro ao ler entrada!\n");
         }
     }
-
-    return 1;
 }
 
 void cadastrarPassageiro() {
@@ -181,6 +167,40 @@ void listarTripulacao() {
     fclose(file);
 }
 
+int validarDataHora(const char *data, const char *hora) {
+    int dia, mes, ano, horas, minutos;
+    time_t t = time(NULL);
+    struct tm *tempoAtual = localtime(&t);
+
+    int diaAtual = tempoAtual->tm_mday;
+    int mesAtual = tempoAtual->tm_mon + 1;
+    int anoAtual = tempoAtual->tm_year + 1900;
+    int horaAtual = tempoAtual->tm_hour;
+    int minutoAtual = tempoAtual->tm_min;
+
+    if (sscanf(data, "%d/%d/%d", &dia, &mes, &ano) != 3 ||
+        sscanf(hora, "%d:%d", &horas, &minutos) != 2) {
+        printf("Formato de data ou hora inválido!\n");
+        return 0;
+    }
+
+    if (ano < anoAtual || 
+        (ano == anoAtual && mes < mesAtual) || 
+        (ano == anoAtual && mes == mesAtual && dia < diaAtual)) {
+        printf("Data anterior à atual!\n");
+        return 0;
+    }
+
+    if (ano == anoAtual && mes == mesAtual && dia == diaAtual) {
+        if (horas < horaAtual || (horas == horaAtual && minutos < minutoAtual)) {
+            printf("Hora anterior à atual!\n");
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
 void cadastrarVoo() {
     FILE *file = fopen("voos.bin", "ab+");
     if (!file) {
@@ -192,56 +212,12 @@ void cadastrarVoo() {
     printf("Digite o código do voo: ");
     scanf("%d", &v.codigo);
 
-<<<<<<< HEAD
-    do 
+    do {
         printf("Digite a data do voo (dd/mm/aaaa): ");
         scanf(" %[^\n]", v.data);
         printf("Digite a hora do voo (hh:mm): ");
         scanf(" %[^\n]", v.hora);
     } while (!validarDataHora(v.data, v.hora));
-=======
-    // Obtendo a data e hora atuais
-    time_t t = time(NULL);
-    struct tm tm = *localtime(&t);
-
-    // Formatando a data e hora
-    snprintf(v.data, sizeof(v.data), "%02d/%02d/%04d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
-    snprintf(v.hora, sizeof(v.hora), "%02d:%02d", tm.tm_hour, tm.tm_min);
-
-    printf("Data mínima do voo: %s\n", v.data);
-    printf("Hora mínima do voo: %s\n", v.hora);
-
-    // Verificando se a data é vál ida
-    char data_input[11];
-    printf("Digite a data do voo (dd/mm/aaaa): ");
-    scanf(" %[^\n]", data_input);
-
-    struct tm data_v;
-    if (strptime(data_input, "%d/%m/%Y", &data_v) == NULL) {
-        printf("Data inválida! Formato deve ser dd/mm/aaaa.\n");
-        fclose(file);
-        return;
-    }
-
-    // Verificando se a data é no futuro
-    time_t data_v_time = mktime(&data_v);
-    if (difftime(data_v_time, t) < 0) {
-        printf("Data não pode ser no passado!\n");
-        fclose(file);
-        return;
-    }
-
-    strcpy(v.data, data_input);
-    printf("Digite a hora do voo (hh:mm): ");
-    scanf(" %[^\n]", v.hora);
-
-    // Verificando se a hora está no formato correto
-    if (sscanf(v.hora, "%2d:%2d", &tm.tm_hour, &tm.tm_min) != 2 || tm.tm_hour > 23 || tm.tm_min > 59) {
-        printf("Hora inválida! Formato deve ser hh:mm.\n");
-        fclose(file);
-        return;
-    }
->>>>>>> aa4525cf65696d84fb2fc28bb540fac2d51275be
 
     printf("Digite a origem: ");
     scanf(" %[^\n]", v.origem);
@@ -263,7 +239,6 @@ void cadastrarVoo() {
     fwrite(&v, sizeof(Voo), 1, file);
     fclose(file);
     printf("Voo cadastrado com sucesso!\n");
-
 }
 
 void listarVoos() {
@@ -281,27 +256,6 @@ void listarVoos() {
     fclose(file);
 }
 
-void cadastrarAssentos(int codigoVoo) {
-    FILE *file = fopen("assentos.bin", "ab+");
-    if (!file) {
-        printf("Erro ao abrir o arquivo de assentos.\n");
-        return;
-    }
-    int numAssentos;
-    printf("Digite o número de assentos para o voo %d: ", codigoVoo);
-    scanf("%d", &numAssentos);
-
-    for (int i = 1; i <= numAssentos; i++) {
-        Assento a;
-        a.numero = i;
-        a.codigoVoo = codigoVoo;
-        a.status = 0;
-        fwrite(&a, sizeof(Assento), 1, file);
-    }
-    fclose(file);
-    printf("Assentos cadastrados com sucesso!\n");
-}
-
 int main() {
     int opcao;
     do {
@@ -313,8 +267,9 @@ int main() {
         printf("5. Cadastrar Voo\n");
         printf("6. Listar Voos\n");
         printf("0. Sair\n");
-        printf("Escolha uma opção: ");
-        scanf("%d", &opcao);
+
+        opcao = lerOpcao();
+
         switch (opcao) {
             case 1:
                 cadastrarPassageiro();
