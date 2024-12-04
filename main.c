@@ -39,11 +39,7 @@ typedef struct {
 typedef struct {
     int numero;      
     int codigoVoo;   
-<<<<<<< HEAD
-    int status;      
-=======
     int status;     
->>>>>>> 750aba68e77fbdcdf2727d26b85e772dabeb299f
 } Assento;
 
 typedef struct {
@@ -76,10 +72,7 @@ int lerOpcao() {
 }
 
 int validarTelefone(const char *telefone) {
-<<<<<<< HEAD
-   
     if (telefone[0] == '0' && strlen(telefone) == 14) {
-        
         for (int i = 0; i < 14; i++) {
             if (i == 0 || i == 1 || i == 2) {
                 if (!isdigit(telefone[i])) {
@@ -88,25 +81,12 @@ int validarTelefone(const char *telefone) {
             } else {
                 if (!isdigit(telefone[i]) && telefone[i] != '-') {
                     return 0; 
-=======
-    // Verifica se o telefone começa com 0 e tem 14 caracteres (incluindo o código de área)
-    if (telefone[0] == '0' && strlen(telefone) == 14) {
-        // Verifica se os primeiros 3 caracteres são o código de área e o resto são dígitos
-        for (int i = 0; i < 14; i++) {
-            if (i == 0 || i == 1 || i == 2) {
-                if (!isdigit(telefone[i])) {
-                    return 0; // Não é um dígito
-                }
-            } else {
-                if (!isdigit(telefone[i]) && telefone[i] != '-') {
-                    return 0; // Não é um dígito ou um hífen
->>>>>>> 750aba68e77fbdcdf2727d26b85e772dabeb299f
                 }
             }
         }
-        return 1; // Telefone válido
+        return 1; 
     }
-    return 0; // Telefone inválido
+    return 0; 
 }
 
 void cadastrarPassageiro() {
@@ -127,11 +107,7 @@ void cadastrarPassageiro() {
     printf("Digite o endereço: ");
     scanf(" %[^\n]", p.endereco);
 
-<<<<<<< HEAD
-    
-=======
     // Validação do telefone
->>>>>>> 750aba68e77fbdcdf2727d26b85e772dabeb299f
     do {
         printf("Digite o telefone (formato: 0XX-XXXXX-XXXX): ");
         scanf(" %[^\n]", p.telefone);
@@ -172,11 +148,7 @@ void cadastrarTripulacao() {
     Tripulacao t;
     int codigoUnico = 1;
 
-<<<<<<< HEAD
     
-=======
-    // Garantir código único para o tripulante
->>>>>>> 750aba68e77fbdcdf2727d26b85e772dabeb299f
     do {
         FILE *verificaFile = fopen("tripulacao.bin", "rb");
         if (!verificaFile) {
@@ -199,19 +171,11 @@ void cadastrarTripulacao() {
         fclose(verificaFile);
     } while (!codigoUnico);
 
-<<<<<<< HEAD
     
     printf("Digite o nome: ");
     scanf(" %[^\n]", t.nome);
 
     
-=======
-    // Informações do tripulante
-    printf("Digite o nome: ");
-    scanf(" %[^\n]", t.nome);
-
-    // Validação do telefone
->>>>>>> 750aba68e77fbdcdf2727d26b85e772dabeb299f
     do {
         printf("Digite o telefone (formato: 0XX-XXXXXXXX): ");
         scanf(" %[^\n]", t.telefone);
@@ -220,11 +184,7 @@ void cadastrarTripulacao() {
         }
     } while (!validarTelefone(t.telefone));
 
-<<<<<<< HEAD
     
-=======
-    // Validação do cargo
->>>>>>> 750aba68e77fbdcdf2727d26b85e772dabeb299f
     do {
         printf("Digite o cargo (Piloto, Copiloto, Comissario): ");
         scanf(" %[^\n]", t.cargo);
@@ -290,11 +250,7 @@ int validarDataHora(const char *data, const char *hora) {
 }
 
 int validarTarifa(float tarifa) {
-<<<<<<< HEAD
     return tarifa >= 0; 
-=======
-    return tarifa >= 0; // Tarifa não pode ser negativa
->>>>>>> 750aba68e77fbdcdf2727d26b85e772dabeb299f
 }
 
 int verificarCargoTripulacao(int codigo, const char *cargoEsperado) {
@@ -308,21 +264,31 @@ int verificarCargoTripulacao(int codigo, const char *cargoEsperado) {
     while (fread(&t, sizeof(Tripulacao), 1, file)) {
         if (t.codigo == codigo && strcmp(t.cargo, cargoEsperado) == 0) {
             fclose(file);
-<<<<<<< HEAD
             return 1; 
-=======
-            return 1; // Código encontrado com o cargo correto
->>>>>>> 750aba68e77fbdcdf2727d26b85e772dabeb299f
         }
     }
 
     fclose(file);
-<<<<<<< HEAD
     return 0; 
-=======
-    return 0; // Código não encontrado ou cargo incorreto
->>>>>>> 750aba68e77fbdcdf2727d26b85e772dabeb299f
 }
+
+
+// Função para validar a hora (hh:mm)
+int validarHora(const char* hora) {
+    int hora_int, minuto_int;
+    // Verificar se a hora segue o formato hh:mm
+    if (sscanf(hora, "%d:%d", &hora_int, &minuto_int) != 2) {
+        return 0; // Formato inválido
+    }
+
+    // Verificar se a hora e o minuto estão no intervalo válido
+    if (hora_int < 0 || hora_int > 23 || minuto_int < 0 || minuto_int > 59) {
+        return 0; // Hora ou minuto fora do intervalo válido
+    }
+
+    return 1; // Hora válida
+}
+
 void cadastrarVoo() {
     FILE *file = fopen("voos.bin", "ab+");
     if (!file) {
@@ -332,33 +298,6 @@ void cadastrarVoo() {
 
     Voo v;
     int codigoUnico;
-<<<<<<< HEAD
-
-    do {
-        FILE *verificaFile = fopen("voos.bin", "rb");
-        if (!verificaFile) {
-            printf("Erro ao abrir o arquivo de verificação.\n");
-            fclose(file);
-            return;
-        }
-
-        printf("Digite o código do voo: ");
-        scanf("%d", &v.codigo);
-
-        codigoUnico = 1;
-        Voo temp;
-        while (fread(&temp, sizeof(Voo), 1, verificaFile)) {
-            if (temp.codigo == v.codigo) {
-                printf("Código já existente! Por favor, insira outro código.\n");
-                codigoUnico = 0;
-                break;
-            }
-        }
-        fclose(verificaFile);
-    } while (!codigoUnico);
-
-=======
->>>>>>> 750aba68e77fbdcdf2727d26b85e772dabeb299f
 
     do {
         FILE *verificaFile = fopen("voos.bin", "rb");
@@ -389,7 +328,10 @@ void cadastrarVoo() {
         scanf(" %[^\n]", v.data);
         printf("Digite a hora do voo (hh:mm): ");
         scanf(" %[^\n]", v.hora);
-    } while (!validarDataHora(v.data, v.hora));
+        if (!validarHora(v.hora)) {
+            printf("Hora inválida! A hora deve estar no formato hh:mm e dentro do intervalo 00:00 a 23:59.\n");
+        }
+    } while (!validarDataHora(v.data, v.hora) || !validarHora(v.hora)); // Valida hora e formato
 
     printf("Digite a origem: ");
     scanf(" %[^\n]", v.origem);
@@ -398,58 +340,39 @@ void cadastrarVoo() {
     printf("Digite o avião: ");
     scanf(" %[^\n]", v.aviao);
 
-<<<<<<< HEAD
-    
-=======
     // Verificar o código do piloto (não é necessário ser único)
->>>>>>> 750aba68e77fbdcdf2727d26b85e772dabeb299f
     printf("Digite o código do piloto: ");
     scanf("%d", &v.piloto);
     if (!verificarCargoTripulacao(v.piloto, "Piloto")) {
         printf("Código inválido ou não pertence a um Piloto! O voo será registrado como INATIVO.\n");
-<<<<<<< HEAD
-        v.piloto = -1; 
-    }
-
-    
-=======
         v.piloto = -1; // Marcando como inválido
     }
 
     // Verificar o código do copiloto
->>>>>>> 750aba68e77fbdcdf2727d26b85e772dabeb299f
     printf("Digite o código do copiloto: ");
     scanf("%d", &v.copiloto);
     if (!verificarCargoTripulacao(v.copiloto, "Copiloto")) {
         printf("Código inválido ou não pertence a um Copiloto! O voo será registrado como INATIVO.\n");
-<<<<<<< HEAD
-        v.copiloto = -1; 
-    }
-
-    
-=======
         v.copiloto = -1; // Marcando como inválido
     }
 
     // Verificar e adicionar comissários
->>>>>>> 750aba68e77fbdcdf2727d26b85e772dabeb299f
     for (int i = 0; i < MAX_COMISSARIOS; i++) {
         printf("Digite o código do comissário %d (0 para nenhum): ", i + 1);
         scanf("%d", &v.comissarios[i]);
         if (v.comissarios[i] != 0 && !verificarCargoTripulacao(v.comissarios[i], "Comissario")) {
             printf("Código de comissário inválido! Ignorado.\n");
-<<<<<<< HEAD
-            v.comissarios[i] = 0; 
+            v.comissarios[i] = 0; // Zerar código inválido
         }
     }
 
-    
+    // Tratamento de entrada para a tarifa (apenas float)
     int tarifaValida = 0;
     while (!tarifaValida) {
         printf("Digite a tarifa (formato: 0.00): ");
         if (scanf("%f", &v.tarifa) != 1) {
             printf("Erro: A tarifa deve ser um número válido. Tente novamente.\n");
-            while(getchar() != '\n'); 
+            while(getchar() != '\n'); // Limpa o buffer de entrada
         } else if (v.tarifa < 0) {
             printf("Tarifa inválida! Deve ser um valor positivo.\n");
         } else {
@@ -457,38 +380,19 @@ void cadastrarVoo() {
         }
     }
 
-   
-    if (v.piloto != -1 && v.copiloto != -1) {
-        v.status = 1; 
-    } else {
-        v.status = 0; 
-=======
-            v.comissarios[i] = 0; // Zerar código inválido
-        }
-    }
-
-    // Validação da tarifa
-    do {
-        printf("Digite a tarifa (formato: 0.00): ");
-        scanf("%f", &v.tarifa);
-        if (v.tarifa < 0) {
-            printf("Tarifa inválida! Deve ser um valor positivo.\n");
-        }
-    } while (v.tarifa < 0);
-
     // Determinar status do voo
     // Se piloto ou copiloto for inválido, o status será "Inativo"
     if (v.piloto != -1 && v.copiloto != -1) {
         v.status = 1; // Ativo se ambos forem válidos
     } else {
         v.status = 0; // Inativo se algum for inválido
->>>>>>> 750aba68e77fbdcdf2727d26b85e772dabeb299f
     }
 
     fwrite(&v, sizeof(Voo), 1, file);
     fclose(file);
     printf("Voo cadastrado com sucesso! Status: %s\n", v.status ? "Ativo" : "Inativo");
 }
+
 void listarVoos() {
     FILE *file = fopen("voos.bin", "rb");
     if (!file) {
@@ -539,7 +443,7 @@ void listarVoos() {
         }
         printf("\nStatus: %s\n\n", v.status ? "Ativo" : "Inativo");
 
-        // Restaurar status original após exibição (caso a validação seja temporária)
+        
         v.status = statusOriginal;
     }
     
@@ -624,7 +528,7 @@ void cadastrarAssento() {
     Assento novoAssento;
     novoAssento.codigoVoo = codigoVoo;
     novoAssento.numero = numeroAssento;
-    novoAssento.status = 1; // Inicialmente livre
+    novoAssento.status = 1; 
 
     fseek(fileAssento, 0, SEEK_END);
     fwrite(&novoAssento, sizeof(Assento), 1, fileAssento);
@@ -645,7 +549,7 @@ void cadastrarReserva() {
         }
     }
 
-    // Abrir outros arquivos
+    
     FILE *fileVoo = fopen("voos.bin", "rb");
     FILE *fileAssento = fopen("assentos.bin", "r+b");
     FILE *filePassageiro = fopen("passageiros.bin", "rb");
@@ -655,7 +559,7 @@ void cadastrarReserva() {
         if (fileVoo) fclose(fileVoo);
         if (fileAssento) fclose(fileAssento);
         if (filePassageiro) fclose(filePassageiro);
-        fclose(fileReserva); // Fechar arquivo de reservas
+        fclose(fileReserva); 
         return;
     }
 
@@ -693,7 +597,7 @@ void cadastrarReserva() {
     int assentoReservado = 0;
 
     // Verificar se o assento já está reservado
-    rewind(fileReserva); // Voltar ao início do arquivo de reservas
+    rewind(fileReserva); 
     while (fread(&reserva, sizeof(Reserva), 1, fileReserva)) {
         if (reserva.codigoVoo == codigoVoo && reserva.numeroAssento == numeroAssento) {
             assentoReservado = 1;
@@ -753,14 +657,6 @@ void cadastrarReserva() {
         return;
     }
 
-<<<<<<< HEAD
-    // Verificar se o assento está disponível (status 1)
-    Assento assento;
-    int assentoLivre = 0;
-    while (fread(&assento, sizeof(Assento), 1, fileAssento)) {
-        if (assento.codigoVoo == codigoVoo && assento.numero == numeroAssento) {
-            if (assento.status == 1) {  // Assento disponível
-=======
     // Verificar se o assento está disponível (status 1) ou foi dado baixa (liberado)
     Assento assento;
     int assentoLivre = 0;
@@ -768,7 +664,6 @@ void cadastrarReserva() {
     while (fread(&assento, sizeof(Assento), 1, fileAssento)) {
         if (assento.codigoVoo == codigoVoo && assento.numero == numeroAssento) {
             if (assento.status == 1) {  // Assento disponível ou liberado
->>>>>>> 750aba68e77fbdcdf2727d26b85e772dabeb299f
                 assentoLivre = 1;
                 break;
             } else {
@@ -811,10 +706,67 @@ void cadastrarReserva() {
     fclose(fileReserva);
     fclose(filePassageiro);
 }
-<<<<<<< HEAD
-=======
+void reservarAssento() {
+    int codigoVoo, numeroAssento, codigoPassageiro;
 
->>>>>>> 750aba68e77fbdcdf2727d26b85e772dabeb299f
+    printf("Digite o código do voo: ");
+    scanf("%d", &codigoVoo);
+    printf("Digite o número do assento: ");
+    scanf("%d", &numeroAssento);
+    printf("Digite o código do passageiro: ");
+    scanf("%d", &codigoPassageiro);
+
+    // Abrir os arquivos de assentos e reservas
+    FILE *fileAssentos = fopen("assentos.bin", "r+b");
+    FILE *fileReservas = fopen("reservas.bin", "r+b");
+    Assento a;
+    Reserva r;
+    int assentoDisponivel = 0;
+
+    if (!fileAssentos || !fileReservas) {
+        printf("Erro ao abrir os arquivos necessários.\n");
+        return;
+    }
+
+    // Verificar se o assento está disponível
+    fseek(fileAssentos, 0, SEEK_SET);
+    while (fread(&a, sizeof(Assento), 1, fileAssentos)) {
+        if (a.codigoVoo == codigoVoo && a.numero == numeroAssento) {
+            if (a.status == 0) {  // O assento está reservado
+                printf("Assento %d no voo %d já está reservado.\n", numeroAssento, codigoVoo);
+                fclose(fileAssentos);
+                fclose(fileReservas);
+                return;
+            } else {
+                assentoDisponivel = 1;
+                break;
+            }
+        }
+    }
+
+    if (assentoDisponivel) {
+        // Criar uma nova reserva para o assento
+        fseek(fileReservas, 0, SEEK_END);
+        r.codigoVoo = codigoVoo;
+        r.numeroAssento = numeroAssento;
+        r.codigoPassageiro = codigoPassageiro;
+
+        fwrite(&r, sizeof(Reserva), 1, fileReservas);
+
+        // Alterar o status do assento para reservado
+        fseek(fileAssentos, -sizeof(Assento), SEEK_CUR);
+        a.status = 0; // Marcar como reservado
+        fwrite(&a, sizeof(Assento), 1, fileAssentos);
+
+        printf("Assento %d no voo %d reservado com sucesso!\n", numeroAssento, codigoVoo);
+    } else {
+        printf("Assento %d no voo %d não está disponível para reserva.\n", numeroAssento, codigoVoo);
+    }
+
+    fclose(fileAssentos);
+    fclose(fileReservas);
+}
+
 void darBaixaReserva() {
     int codigoVoo, numeroAssento, codigoPassageiro;
 
@@ -825,7 +777,7 @@ void darBaixaReserva() {
     printf("Digite o código do passageiro: ");
     scanf("%d", &codigoPassageiro);
 
-    // Abrir arquivos
+    // Abrir os arquivos de assentos e reservas
     FILE *fileAssentos = fopen("assentos.bin", "r+b");
     FILE *fileReservas = fopen("reservas.bin", "r+b");
     Assento a;
@@ -838,11 +790,11 @@ void darBaixaReserva() {
         return;
     }
 
-    // Percorrer o arquivo de reservas para encontrar a reserva do passageiro
+    // Verificar se existe a reserva para o assento e passageiro
     while (fread(&r, sizeof(Reserva), 1, fileReservas)) {
         if (r.codigoVoo == codigoVoo && r.numeroAssento == numeroAssento && r.codigoPassageiro == codigoPassageiro) {
             reservaEncontrada = 1;
-            break;  // Encontramos a reserva
+            break;  // Reserva encontrada
         }
     }
 
@@ -853,13 +805,15 @@ void darBaixaReserva() {
         return;
     }
 
-    // Percorrer os assentos para encontrar o assento a ser liberado
+    // Buscar o assento no arquivo de assentos
+    fseek(fileAssentos, 0, SEEK_SET);
     while (fread(&a, sizeof(Assento), 1, fileAssentos)) {
         if (a.codigoVoo == codigoVoo && a.numero == numeroAssento) {
-            if (a.status == 0) {  // Se o assento estiver ocupado
-                a.status = 1;  // Liberar o assento (disponível)
-                fseek(fileAssentos, -sizeof(Assento), SEEK_CUR);  // Voltar à posição do assento
-                fwrite(&a, sizeof(Assento), 1, fileAssentos);  // Escrever o novo status
+            if (a.status == 0) {  // Assento já estava reservado
+                // Liberar o assento (alterar status para disponível)
+                a.status = 1;
+                fseek(fileAssentos, -sizeof(Assento), SEEK_CUR);  // Voltar para o local correto do assento
+                fwrite(&a, sizeof(Assento), 1, fileAssentos);  // Salvar a mudança no arquivo de assentos
                 assentoEncontrado = 1;
                 break;
             }
@@ -867,17 +821,39 @@ void darBaixaReserva() {
     }
 
     if (assentoEncontrado) {
-        // Apagar a reserva do assento
-        fseek(fileReservas, -sizeof(Reserva), SEEK_CUR);
-        // Atualizar o arquivo de reservas removendo a reserva
-        printf("Assento %d no voo %d liberado com sucesso!\n", numeroAssento, codigoVoo);
+        // Criar um arquivo temporário para registrar as reservas restantes
+        FILE *tempFile = fopen("temp_reservas.bin", "wb+");
+        if (!tempFile) {
+            printf("Erro ao criar arquivo temporário.\n");
+            fclose(fileAssentos);
+            fclose(fileReservas);
+            return;
+        }
+
+        // Copiar as reservas que não são a do assento liberado
+        rewind(fileReservas);
+        while (fread(&r, sizeof(Reserva), 1, fileReservas)) {
+            if (r.codigoVoo != codigoVoo || r.numeroAssento != numeroAssento || r.codigoPassageiro != codigoPassageiro) {
+                fwrite(&r, sizeof(Reserva), 1, tempFile);
+            }
+        }
+
+        fclose(fileReservas);
+        fclose(tempFile);
+
+        // Substituir o arquivo de reservas pelo temporário
+        remove("reservas.bin");
+        rename("temp_reservas.bin", "reservas.bin");
+
+        printf("Reserva de assento %d no voo %d foi liberada com sucesso!\n", numeroAssento, codigoVoo);
     } else {
         printf("Assento não encontrado ou já está disponível.\n");
     }
 
     fclose(fileAssentos);
-    fclose(fileReservas);
 }
+
+
 
 void listarVoosPassageiro() {
     int codigoPassageiro;
@@ -901,36 +877,10 @@ void listarVoosPassageiro() {
 
     printf("\n--- Histórico de Voos do Passageiro %d ---\n", codigoPassageiro);
 
-<<<<<<< HEAD
-  
-    while (fread(&r, sizeof(Reserva), 1, fileReservas)) {
-        if (r.codigoPassageiro == codigoPassageiro) {
-            
-            rewind(fileVoos);  
-            while (fread(&voo, sizeof(Voo), 1, fileVoos)) {
-                if (r.codigoVoo == voo.codigo) {
-                    
-                    rewind(fileAssentos);  
-                    while (fread(&a, sizeof(Assento), 1, fileAssentos)) {
-                        if (a.codigoVoo == r.codigoVoo && a.numero == r.numeroAssento) {
-                            
-                            if (a.status == 1) {
-                               
-                                printf("Voo %d (Assento %d) - Reserva concluída (Assento disponível)\n", r.codigoVoo, r.numeroAssento);
-                            } else {
-                                
-                                printf("Voo %d (Assento %d) - Reservado\n", r.codigoVoo, r.numeroAssento);
-                            }
-                            encontrado = 1;
-                            break;  
-                        }
-                    }
-                    break;  
-=======
     // Lê todas as reservas do passageiro
     while (fread(&r, sizeof(Reserva), 1, fileReservas)) {
         if (r.codigoPassageiro == codigoPassageiro) {
-            // Busca o voo associado à reserva
+            // Busca o voo 
             rewind(fileVoos);  // Volta ao início do arquivo de voos
             while (fread(&voo, sizeof(Voo), 1, fileVoos)) {
                 if (r.codigoVoo == voo.codigo) {
@@ -947,11 +897,10 @@ void listarVoosPassageiro() {
                                 printf("Voo %d (Assento %d) - Reservado\n", r.codigoVoo, r.numeroAssento);
                             }
                             encontrado = 1;
-                            break;  // Saímos do loop ao encontrar o assento
+                            break;  
                         }
                     }
-                    break;  // Saímos do loop ao encontrar o voo
->>>>>>> 750aba68e77fbdcdf2727d26b85e772dabeb299f
+                    break;  
                 }
             }
         }
@@ -984,23 +933,6 @@ void pesquisarPassageiro() {
     printf("Passageiro não encontrado!\n");
 }
 void pesquisarTripulante() {
-<<<<<<< HEAD
-    int codigoTripulante;
-    printf("Digite o código do tripulante: ");
-    scanf("%d", &codigoTripulante);
-
-    FILE *file = fopen("tripulantes.bin", "r+b");
-    Tripulacao t;
-    while (fread(&t, sizeof(Tripulacao), 1, file)) {
-        if (t.codigo == codigoTripulante) {
-            printf("Tripulante encontrado: %s\n", t.nome);
-            fclose(file);
-            return;
-        }
-    }
-    fclose(file);
-    printf("Tripulante não encontrado!\n");
-=======
     int opcao;
     printf("Deseja pesquisar por:\n1. Código do tripulante\n2. Nome do tripulante\nEscolha: ");
     scanf("%d", &opcao);
@@ -1046,7 +978,6 @@ void pesquisarTripulante() {
     }
 
     fclose(file);
->>>>>>> 750aba68e77fbdcdf2727d26b85e772dabeb299f
 }
 
 void programaFidelidade() {
