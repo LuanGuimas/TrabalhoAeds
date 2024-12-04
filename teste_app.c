@@ -399,5 +399,19 @@ void testCadastrarAssentoReservado() {
 
     fclose(file);
 }
+void testValidarTelefone() {
+    printf("Testando a função de validar telefone...\n");
+
+    // Telefone válido
+    assert(validarTelefone("011-12345-6789") == 1);
+    // Telefone inválido (formato incorreto)
+    assert(validarTelefone("11-12345-6789") == 0);
+    // Telefone inválido (número insuficiente de dígitos)
+    assert(validarTelefone("011-123-6789") == 0);
+    // Telefone inválido (caracteres não permitidos)
+    assert(validarTelefone("011-abcde-6789") == 0);
+
+    printf("Todos os testes para validar telefone passaram!\n");
+}
 
 
