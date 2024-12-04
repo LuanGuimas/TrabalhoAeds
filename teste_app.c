@@ -358,5 +358,46 @@ void testVerificarCargoTripulacao() {
 
     fclose(file);
 }
+void testCadastrarAssentoReservado() {
+    limparArquivos();
+
+    // Simular cadastro de voo e passageiro antes de reservar
+    cadastrarVoo();
+    cadastrarPassageiro();
+
+    FILE *file = fopen("reservas.bin", "wb");
+    if (!file) {
+        printf("Falha ao criar reservas.bin\n");
+        return;
+    }
+
+    Reserva reservaTeste = {
+        .codigoVoo = 1,
+        .numeroAssento = 1,
+        .codigoPassageiro = 1
+    };
+    fwrite(&reservaTeste, sizeof(Reserva), 1, file);
+    fclose(file);
+
+    // Reabre o arquivo para leitura
+    file = fopen("reservas.bin", "rb");
+    if (!file) {
+        printf("Falha ao abrir reservas.bin\n");
+        return;
+    }
+
+    Reserva r;
+    if (fread(&r, sizeof(Reserva), 1, file) == 1) {
+        if (r.codigoVoo == 1 && r.numeroAssento == 1 && r.codigoPassageiro == 1) {
+            printf("Teste cadastrarAssentoReservado passou!\n");
+        } else {
+            printf("Teste cadastrarAssentoReservado falhou!\n");
+        }
+    } else {
+        printf("Nenhuma reserva encontrada. Teste falhou!\n");
+    }
+
+    fclose(file);
+}
 
 
