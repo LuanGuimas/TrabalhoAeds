@@ -332,4 +332,31 @@ void testListarTripulacao() {
         printf("Teste listarTripulacao falhou!\n");
     }
 }
+void testVerificarCargoTripulacao() {
+    limparArquivos();
+
+    // Simula o cadastro de um tripulante com o cargo de Piloto
+    cadastrarTripulacao();
+
+    FILE *file = fopen("tripulacao.bin", "rb");
+    if (!file) {
+        printf("Falha ao abrir tripulacao.bin\n");
+        return;
+    }
+
+    Tripulacao t;
+    if (fread(&t, sizeof(Tripulacao), 1, file) == 1) {
+        int resultado = verificarCargoTripulacao(t.codigo, "Piloto");
+        if (resultado == 1) {
+            printf("Teste verificarCargoTripulacao passou!\n");
+        } else {
+            printf("Teste verificarCargoTripulacao falhou!\n");
+        }
+    } else {
+        printf("Nenhum tripulante encontrado. Teste falhou!\n");
+    }
+
+    fclose(file);
+}
+
 
