@@ -302,3 +302,34 @@ void testCadastrarPassageiroCodigoUnico() {
 
     fclose(file);
 }
+
+void testListarTripulacao() {
+    limparArquivos();
+
+    cadastrarTripulacao();
+
+    freopen("output.tmp", "w", stdout); // Redireciona saída para arquivo
+    listarTripulacao();
+    freopen("/dev/tty", "w", stdout);  // Restaura saída padrão
+
+    FILE *out = fopen("output.tmp", "r");
+    char buffer[256];
+    int found = 0;
+
+    while (fgets(buffer, sizeof(buffer), out)) {
+        if (strstr(buffer, "Piloto") != NULL || strstr(buffer, "Copiloto") != NULL || strstr(buffer, "Comissario") != NULL) {
+            found = 1;
+            break;
+        }
+    }
+
+    fclose(out);
+    remove("output.tmp");
+
+    if (found) {
+        printf("Teste listarTripulacao passou!\n");
+    } else {
+        printf("Teste listarTripulacao falhou!\n");
+    }
+}
+
