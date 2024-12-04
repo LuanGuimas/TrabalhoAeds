@@ -192,3 +192,39 @@ void testReservarAssento() {
 
     fclose(file);
 }
+
+void testCadastrarTripulacaoCodigoUnico() {
+    limparArquivos();
+
+    cadastrarTripulacao();
+
+    FILE *file = fopen("tripulacao.bin", "rb");
+    if (!file) {
+        printf("Falha ao abrir tripulacao.bin\n");
+        return;
+    }
+
+    Tripulacao t1, t2;
+
+    // Lê o primeiro tripulante
+    if (fread(&t1, sizeof(Tripulacao), 1, file) == 1) {
+        // Simula a tentativa de cadastrar o mesmo código de tripulante
+        int codigoDuplicado = t1.codigo;
+        freopen("/dev/null", "w", stdout); // Suprime a saída no console
+        cadastrarTripulacao();
+        freopen("/dev/tty", "w", stdout); // Restaura a saída no console
+
+        // Verifica se apenas um tripulante foi cadastrado
+        fseek(file, 0, SEEK_SET);
+        if (fread(&t2, sizeof(Tripulacao), 1, file) == 1 && feof(file)) {
+            printf("Teste cadastrarTripulacaoCodigoUnico passou!\n");
+        } else {
+            printf("Teste cadastrarTripulacaoCodigoUnico falhou!\n");
+        }
+    } else {
+        printf("Nenhum tripulante encontrado. Teste falhou!\n");
+    }
+
+    fclose(file);
+}
+
