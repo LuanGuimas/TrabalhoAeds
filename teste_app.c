@@ -255,3 +255,16 @@ void testValidarTarifa() {
     fclose(file);
 }
 
+void testValidarDataHora() {
+    printf("Testando a função de validar data e hora...\n");
+
+    // Simulando a inserção de uma data e hora válidas
+    assert(validarDataHora("25/12/2024", "15:30") == 1);
+    // Simulando a inserção de uma data inválida
+    assert(validarDataHora("32/12/2024", "15:30") == 0);
+    // Simulando a inserção de uma hora inválida
+    assert(validarDataHora("25/12/2024", "25:00") == 0);
+
+    printf("Todos os testes para validar data e hora passaram!\n");
+}
+
