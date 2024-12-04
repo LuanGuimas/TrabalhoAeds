@@ -227,4 +227,31 @@ void testCadastrarTripulacaoCodigoUnico() {
 
     fclose(file);
 }
+void testValidarTarifa() {
+    limparArquivos();
+
+    // Simula o cadastro de um voo com tarifa negativa
+    freopen("/dev/null", "w", stdout); // Suprime saídas de printf no console
+    freopen("/dev/null", "r", stdin); // Suprime entradas para evitar interação
+    cadastrarVoo(); // Suprimir as entradas que validam a tarifa
+
+    FILE *file = fopen("voos.bin", "rb");
+    if (!file) {
+        printf("Falha ao abrir voos.bin\n");
+        return;
+    }
+
+    Voo v;
+    if (fread(&v, sizeof(Voo), 1, file) == 1) {
+        if (v.tarifa >= 0) {
+            printf("Teste validarTarifa passou!\n");
+        } else {
+            printf("Teste validarTarifa falhou!\n");
+        }
+    } else {
+        printf("Nenhum voo encontrado. Teste falhou!\n");
+    }
+
+    fclose(file);
+}
 
