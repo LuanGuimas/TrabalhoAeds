@@ -414,4 +414,59 @@ void testValidarTelefone() {
     printf("Todos os testes para validar telefone passaram!\n");
 }
 
+void testCadastrarVooPilotoInvalido() {
+    limparArquivos();
+
+    // Simula o cadastro de um tripulante como copiloto para ser usado no voo
+    FILE *file = fopen("tripulacao.bin", "wb");
+    if (!file) {
+        printf("Falha ao criar tripulacao.bin\n");
+        return;
+    }
+
+    Tripulacao copilotoTeste = {
+        .codigo = 200,
+    };
+    strcpy(copilotoTeste.nome, "Copiloto Teste");
+    strcpy(copilotoTeste.cargo, "Copiloto");
+    fwrite(&copilotoTeste, sizeof(Tripulacao), 1, file);
+    fclose(file);
+
+    // Simula o cadastro de um voo com piloto inválido e copiloto válido
+    Voo vooTeste = {
+        .codigo = 1,
+        .piloto = -1, // Piloto inválido
+        .copiloto = 200, // Copiloto válido
+    };
+    strcpy(vooTeste.origem, "Origem Teste");
+    vooTeste.status = (vooTeste.piloto != -1 && vooTeste.copiloto != -1) ? 1 : 0;
+
+    file = fopen("voos.bin", "wb");
+    if (!file) {
+        printf("Falha ao criar voos.bin\n");
+        return;
+    }
+    fwrite(&vooTeste, sizeof(Voo), 1, file);
+    fclose(file);
+
+    // Reabre o arquivo para leitura e valida o status do voo
+    file = fopen("voos.bin", "rb");
+    if (!file) {
+        printf("Falha ao abrir voos.bin para leitura\n");
+        return;
+    }
+
+    Voo v;
+    if (fread(&v, sizeof(Voo), 1, file) == 1) {
+        if (v.status == 0) {
+            printf("Teste cadastrarVooPilotoInvalido passou! O voo foi registrado como INATIVO.\n");
+        } else {
+            printf("Teste cadastrarVooPilotoInvalido falhou! O status do voo deveria ser INATIVO.\n");
+        }
+    } else {
+        printf("Nenhum voo encontrado. Teste falhou!\n");
+    }
+
+    fclose(file);
+}
 
