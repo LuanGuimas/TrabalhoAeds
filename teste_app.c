@@ -268,3 +268,37 @@ void testValidarDataHora() {
     printf("Todos os testes para validar data e hora passaram!\n");
 }
 
+void testCadastrarPassageiroCodigoUnico() {
+    limparArquivos();
+
+    cadastrarPassageiro();
+
+    FILE *file = fopen("passageiros.bin", "rb");
+    if (!file) {
+        printf("Falha ao abrir passageiros.bin\n");
+        return;
+    }
+
+    Passageiro p1, p2;
+
+    // Lê o primeiro passageiro
+    if (fread(&p1, sizeof(Passageiro), 1, file) == 1) {
+        // Simula a tentativa de cadastrar o mesmo código de passageiro
+        int codigoDuplicado = p1.codigo;
+        freopen("/dev/null", "w", stdout); // Suprime a saída no console
+        cadastrarPassageiro();
+        freopen("/dev/tty", "w", stdout); // Restaura a saída no console
+
+        // Verifica se apenas um passageiro foi cadastrado
+        fseek(file, 0, SEEK_SET);
+        if (fread(&p2, sizeof(Passageiro), 1, file) == 1 && feof(file)) {
+            printf("Teste cadastrarPassageiroCodigoUnico passou!\n");
+        } else {
+            printf("Teste cadastrarPassageiroCodigoUnico falhou!\n");
+        }
+    } else {
+        printf("Nenhum passageiro encontrado. Teste falhou!\n");
+    }
+
+    fclose(file);
+}
